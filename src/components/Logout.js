@@ -3,8 +3,8 @@ class Logout extends Component {
 
     constructor(){
         super()
-        localStorage.removeItem("username");
         localStorage.setItem("loginStatus","nothing");
+        localStorage.removeItem("movieid");
     }
     render() {
         return (

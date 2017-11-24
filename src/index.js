@@ -1,5 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Layout from './components/Layout';
+import App from './App';
+import {BrowserRouter} from 'react-router-dom';
 
-ReactDOM.render(<Layout />, document.getElementById('root'));
+const getLoginStatus = localStorage.getItem("loginStatus");
+
+
+ReactDOM.render(
+<BrowserRouter>
+    <App loginStatus = {getLoginStatus}/>
+</BrowserRouter>, document.getElementById('root'));

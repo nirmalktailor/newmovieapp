@@ -1,114 +1,128 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import axios from 'axios';
 import PropTypes from 'prop-types';
 import debounce from 'lodash/debounce';
-import MovieDetail from './MovieDetail';
-
+import ReactTooltip from 'react-tooltip'
 
 class Dashboard extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            movies: [],
-            searchFilter: ''
-        };
 
-        const checkLoginStatus = localStorage.getItem("loginStatus");
-        if(checkLoginStatus != "success"){
-            this.props.history.push('/');
+        const getLoginStatus = localStorage.getItem("loginStatus");
+        if(getLoginStatus === "nothing" || getLoginStatus == "undefined") {
+            this.props.history.push('/login');
         }
 
-        this.updateMovies =  debounce(function(searchValue) {
+        this.state = {
+            movies          : [],
+            searchFilter    : '',
+            initialMovies   : [],
+            loading         : true
+        };
 
-                axios.get('https://api.themoviedb.org/3/search/movie?api_key=0ca81b60e0ccb82d9e38665f13b044f5&query='+searchValue)
+        this.updateMovies = debounce(function (searchValue) {
+            if (searchValue == '') {
+                this.setState({movies: this.state.initialMovies})
+            }
+            axios
+                .get('https://api.themoviedb.org/3/search/movie?api_key=0ca81b60e0ccb82d9e38665f13b044' +
+                    'f5&query=' + searchValue)
                 .then((response) => {
-                    this.setState({ movies: response.data.results || [] })
+                    this.setState({movies: response.data.results})
                 })
                 .catch((error) => {
                     console.log(error);
                 });
-            },100);
-        }
-
-    componentWillMount() {
+        }, 100);
     }
 
     componentDidMount() {
-        axios.get('https://api.themoviedb.org/3/movie/popular?api_key=0ca81b60e0ccb82d9e38665f13b044f5')
+        axios
+            .get('https://api.themoviedb.org/3/movie/popular?api_key=0ca81b60e0ccb82d9e38665f13b04' +
+                '4f5')
             .then((response) => {
-                this.setState({ movies: response.data.results || [] })
-                console.log(this.state);
+                this.setState({movies: response.data.results, initialMovies: response.data.results, loading: false})
             })
             .catch((error) => {
                 console.log(error);
             });
     }
-    
+
     filterMovies = (event) => {
-        this.setState({
-            searchFilter: event.target.value
-        });
-        this.updateMovies(event.target.value);        
+        this.setState({searchFilter: event.target.value});
+        this.updateMovies(event.target.value);
     }
 
     getMovieDetail = (event) => {
-       let getMovieId = event.target.value;
-       this.props.history.push(
-           {
-                pathname: '/moviedetail',
-                search: '?movieId='+getMovieId,
-                movieId : getMovieId
-            }
-        )
+        console.log(event.target);
+        let getMovieId = event.target.value;
+        localStorage.setItem("movieid", getMovieId);
+        this
+            .props
+            .history
+            .push({pathname: '/moviedetail', movieId: getMovieId})
     }
 
     render() {
-        return (
-            
-
-            <div className="container">
-                <center><h2>Movie DB Application Dashboard<small>&nbsp;&nbsp;Welcome : {localStorage.getItem('username')}</small></h2></center><br />
+        let content;
+        if (this.state.loading) {
+            content = <div>
+                <img
+                    src="https://loading.io/spinners/double-ring/lg.double-ring-spinner.gif"
+                    height="200"
+                    width="200"/>
+            </div>;
+        } else {
+            content = <div className="container">
+                <center>
+                    <h2>Movie DB Application Dashboard<small>&nbsp;&nbsp;Welcome : {localStorage.getItem('username')}</small>
+                    </h2>
+                </center><br/>
                 <div>
-                    <label>Search Movies : </label>
-                    <input type="text" class="form-control moviesFilter" onChange={this.filterMovies} value={this.state.searchFilter} />
+                    <label>Search Movies :
+                    </label>
+                    <input
+                        type="text"
+                        className="form-control moviesFilter"
+                        onChange={this.filterMovies}
+                        value={this.state.searchFilter}/>
+                        <ReactTooltip />
                 </div>
-                <table class="table table-bordered tableStyle">
-                    <thead>
-                    <tr>
-                        <th>Movie Id</th>
-                        <th>Movie Name</th>
-                        <th>overview</th>
-                        <th>Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            this.state.movies.map((eachMovie) =>
-                                <tr>
-                                    <td><strong>{eachMovie.id}</strong></td>
-                                    <td>{eachMovie.original_title}</td>
-                                    <td>{eachMovie.overview}</td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-primary btn-xs buttonStyle" value={eachMovie.id} onClick={this.getMovieDetail}>Show Detail</button>
-                                            <button type="button" class="btn btn-primary btn-xs">Remove</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            )
-                        }
-                    </tbody>
-                </table>
+
+                 {
+                            this
+                            .state
+                            .movies
+                            .map((eachMovie) => <div className="card">
+                                <img data-tip={eachMovie.original_title} className="img-fluid" alt="Movie Poster Not Found" src={"http://image.tmdb.org/t/p/w185/"+eachMovie.poster_path} />
+                                  <div class="card-body">
+                                    <button
+                                            type="button"
+                                            className="btn btn-success btn-xs buttonStyle"
+                                            value={eachMovie.id}
+                                            onClick={this.getMovieDetail}>Show Detail</button>
+                                </div>
+                            </div>
+                )
+                }
+
+                
             </div>
-        );
+        }
+        return (
+            <div>
+                {content}
+            </div>
+        )
     }
 }
 
 // Specifies the default values for props:
 
 Dashboard.defaultProps = {
-    movies: []
+    movies: [],
+    initialMovies: []
 };
 
 export default Dashboard;

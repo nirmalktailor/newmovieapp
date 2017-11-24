@@ -29,5 +29,24 @@ section {
   font-size: 12px;
 }
 .buttonStyle{
+  float: right;
   margin: 10px;
+}
+.movieImage {
+  border-radius:10px;
+}
+.moviePoster {
+  height: 250px;
+  width: auto;
+  border-radius:10px; 
+}
+.card {
+  float: left;
+  padding: 5px;
+}
+.img-fluid {
+  border-radius: 10px;
+}
+.movieDetailLinks > a {
+  text-align: right;
 }

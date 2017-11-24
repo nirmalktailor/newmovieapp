@@ -1,16 +1,20 @@
 import React, { Component } from 'react';
+import { Redirect } from 'react-router-dom';
 import Dashboard from './Dashboard';
 
-class LoginForm extends Component {
+class Login extends React.Component {
 
     constructor(props) {
         super(props);
+        const getLoginStatus = localStorage.getItem("loginStatus");
+        if(getLoginStatus === "success") {
+            <Redirect to="/dashboard" />;
+        }
         this.state = {
-            username: '',
-            password: '',
-            formValid: false,
-            redirect: false,
-            loginSuccess : false
+            username        :   '',
+            password        :   '',
+            formValid       :   false,
+            loginSuccess    :   false
         };
     }
 
@@ -39,16 +43,13 @@ class LoginForm extends Component {
 
         const getState = this.state.formValid;
         if(getState){
-            if (typeof(Storage) !== "undefined") {
-                localStorage.setItem("username", this.state.username);
-                localStorage.setItem("loginStatus", "success");
-                this.props.history.push('/dashboard');
-            } else {
-            // Some Fall Back Code
-            }    
+
+            localStorage.setItem("username",this.state.username);
+            localStorage.setItem("loginStatus","success");
+            this.props.history.push('/dashboard');
+            
         }else{
             alert("Enter valid Username & Password");
-            
         }
     }
     render() {
@@ -78,4 +79,4 @@ class LoginForm extends Component {
     }
 }
 
-export default LoginForm;
+export default Login;
